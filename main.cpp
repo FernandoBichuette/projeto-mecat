@@ -1,11 +1,8 @@
 #include "mbed.h"
-#include "mbed2/299/platform/wait_api.h"
-#include <cstdint>
-#include <cstdlib>
 
 DigitalOut clkwise(D7);
 DigitalOut clk(D8);
-DigitalOut enable(D10);
+DigitalOut enable(D9);
 
 
 InterruptIn referenciamento(D2);
@@ -14,20 +11,22 @@ Serial pc(USBTX,USBRX);
 InterruptIn sensor1(D3);
 InterruptIn sensor2(D4);
 
-InterruptIn emergencia(D13);
+////InterruptIn emergencia(D1);
 DigitalIn x_mais(D5);
 DigitalIn x_menos(D6);
 
 
 float delay = 0.1;
-float tempo = 0.001;
+float tempo = 950;
 
 int contador1;
 int contador2;
-int curso;  
+int curso1;  
+int curso2;
 int horario;
 int inverter;
 int correcao;
+int outro_lado;
 
 int referenciar;
 int x;
@@ -35,27 +34,47 @@ int jog;
 int ciclo_jog;
 
 int volta_zero;
-int retorno;
+int volta_zero2;
 int fonte;
+int ciclo_da_fonte;
 
 int deposito;
 int ciclo_automatico;
 
 int jog_auto;
 
-void fim_de_curso1()
+void fim_de_curso1(){   
 
-{   
-    
-    inverter = 1;
-    printf("\rX1=%d\n",contador1);
+    if (contador1>0 && contador2==0){
+        horario=1;
+        outro_lado = 1;
+        clkwise=1;
+        for(int i=0;i<400;i++){
+            curso1=contador1-i;
+            clk=!clk;
+            wait_us(tempo);
+        }
+        enable=1;
+       ///printf("\rX1=%d\n",contador1);
+    }
 
 }
 
 void fim_de_curso2(){
-    correcao = 1;
-    printf("\n\rX2=%d\n",contador2);
     
+    if (contador2>0 && fonte==0){
+        outro_lado=0;
+        correcao = 1;
+        inverter=1;
+        clkwise=0;
+        for(int i=0;i<400;i++){
+            curso2=contador2-i;
+            clk=!clk;
+            wait_us(tempo);
+        }
+        enable=1;
+        //printf("\rX1=%d\n",contador2);
+    }
 
 }
 
@@ -64,22 +83,42 @@ void confirma()
 {
     if (contador1==0){
         enable=1;
-        referenciar=1;        
+        referenciar=1; 
+        printf("\rFuncionou 1\n");       
     }
     
     if ((contador2>100)&&(fonte==0)){
-        enable = 1;
-        ciclo_jog=1; 
+        ciclo_da_fonte=1;
+        printf("\rFuncionou 2\n"); 
     }
 
     if ((fonte>100)&&(deposito==0)){
-       jog=1; 
+        ciclo_da_fonte=0; 
+        jog=1;
+        printf("\rFuncionou 3\n");
+        printf("\rF=%d\n",fonte);
+        printf("\rD=%d\n",deposito);
+        printf("\rciclo_da_fonte=%d\n",ciclo_da_fonte);
+        if (volta_zero==0){
+            volta_zero=1;
+            for(int j = 0; j <fonte; ++j){
+                enable=0;
+                clkwise=1;
+                clk=!clk;
+                wait_us(tempo);
+            }
+            enable=1;
+        }
     }
     
     if (deposito>100){
-        volta_zero=0;
+        printf("\rFuncionou 4\n");
         jog=0;
-        ciclo_automatico=1; 
+        ciclo_automatico=1;
+        printf("\rC=%d\n",curso2);
+        printf("\rF=%d\n",fonte);
+        printf("\rD=%d\n",deposito);
+        enable=1; 
     }
 
 
@@ -98,149 +137,135 @@ int main(){
         if (referenciar!=0){
             clkwise=0;
             referenciar=0;
-            while(1){     
+            enable=0;
+            while(horario==0){     
                 contador1 ++;
                 clk=!clk;
-                wait(tempo);
+                wait_us(tempo);
                 //printf("\rX1=%d",contador1);
                 }      
             }
         
-        if (inverter!=0){
+        if (outro_lado!=0){
+            enable=0;
             clkwise=1;
-            inverter=0;
-            while(1) {           
+            while(inverter==0) {           
                 contador2 ++;
                 clk=!clk;
-                wait(tempo);               
+                wait_us(tempo);               
                 //printf("\n\rX2=%d",contador2);
                     }
                 }
 
-        if (correcao!=0){
-                correcao = 0;
-                for(int i = 0; i <100; ++i){
-                    clkwise=0;
-                    curso=contador2-i;
-                    clk=!clk;
-                    wait(tempo);
-                    printf("\rcurso=%d\n",curso);
-                }
-                enable=0;
-            }
         
-        if(ciclo_jog!=0){
-            while(1){
-                if(0<=fonte<=curso){
-                    enable=1;
-                    while(x_mais==0){
-                        clkwise=0;        
-                        fonte ++;
-                        clk=!clk;
-                        wait(tempo);
-                        printf("\rfonte=%d\n",fonte);    
+        if(ciclo_da_fonte==1 && fonte==0){
+            enable=0;
+            while(ciclo_da_fonte==1){
 
+                while(x_mais==0){ 
+                    if(fonte<curso2){
+                        enable=0;
+                        fonte++;
+                        clkwise=0;             
+                        clk=!clk;
+                        wait_us(tempo);
+                        //printf("\rfonte=%d\n",fonte);
                     }
-                    while(x_menos==0){
+                    else{
+                        enable=1;
+                    }
+                }    
+   
+                    
+                while(x_menos==0){
+                    if(fonte>0){
+                        enable=0;
+                        fonte--;
                         clkwise=1;        
-                        fonte --;
                         clk=!clk;
-                        wait(tempo);
-                        printf("\rfonte=%d\n",fonte);    
-
+                        wait_us(tempo);
+                        //printf("\rfonte=%d\n",fonte);
+                    }
+                        
+                    else{
+                        enable=1;
                     }
                 }
-                
-                else{
-                    enable=0;
-                }
-             }
-        }     
 
-        if (jog!=0){
-            if (volta_zero==0){
-                volta_zero = 1; 
-                for(int j = 0; j <=(curso-fonte); ++j){
-                    clkwise=1;
-                    clk=!clk;
-                    wait(tempo);
-                    printf("\rX2=%d\n",j);
-                }
-            }
-            while(1){
-                if(0<=deposito<=curso){
-                    enable=1;
-                    while(x_mais==0){
+            } 
+        }            
+
+        if (jog==1 && deposito==0){
+            while(jog==1){
+
+                while(x_mais==0){
+                    if(deposito<curso2){
+                        enable=0;
                         clkwise=0;        
                         deposito ++;
                         clk=!clk;
-                        wait(tempo);
-                        printf("\rdeposito=%d\n",deposito);    
-
+                        wait_us(tempo);
+                          
                     }
-                    while(x_menos==0){
-                        clkwise=1;        
-                        deposito --;
-                        clk=!clk;
-                        wait(tempo);
-                        printf("\rdeposito=%d\n",deposito);    
-
+                    else{
+                        enable=1;
                     }
                 }
-                
-                else{
-                    
-                    enable=0;
+                while(x_menos==0){
+                    if(deposito>0){
+                        enable=0;
+                        clkwise=1;        
+                        deposito--;
+                        clk=!clk;
+                        wait_us(tempo);
+                            
+                    }
+
+                    else{
+                        
+                        enable=1;
+                    }
                 }
             }
 
         }    
         
-        if(ciclo_automatico!=0){
-            if (volta_zero==0){
-                volta_zero = 1; 
-                for(int i = 0; i <=(curso-deposito); ++i){
-                    clkwise=1;
-                    clk=!clk;
-                    wait(tempo);
-                    printf("\rX=%d\n",i);
-                }
-            }
-            if((fonte-deposito)<=0){
-                for(int i = 0; i <=abs(fonte-deposito); ++i){
+        if(fonte>0 && deposito>0 ){      
+            if((fonte-deposito)<0){
+                for(int i = 0; i <abs(fonte-deposito); ++i){
                     clkwise=0;
                     clk=!clk;
-                    wait(tempo);
-                    printf("\rX=%d\n",i);
+                    wait_us(tempo);
+                    //printf("\rX=%d\n",abs(fonte-deposito));
                 }
     
                 wait(0.5);
     
 
-                for(int i = 0; i <=abs(fonte-deposito); ++i){
+                for(int i = 0; i <abs(fonte-deposito); ++i){
                     clkwise=1;
                     clk=!clk;
-                    wait(tempo);
-                    printf("\rX=%d\n",i);
+                    wait_us(tempo);
+                    //printf("\rX=%d\n",abs(fonte-deposito));
                 }
 
             }    
             
-            if((fonte-deposito)>=0){
-                for(int i = 0; i <=abs(fonte-deposito); ++i){
+            if((fonte-deposito)>0){
+                for(int i = 0; i <abs(fonte-deposito); ++i){
                     clkwise=1;
                     clk=!clk;
-                    wait(tempo);
-                    printf("\rX=%d\n",i);
+                    wait_us(tempo);
+                    //printf("\rX=%d\n",i);
                 }
 
                  wait(0.5);
 
-                for(int i = 0; i <=abs(fonte-deposito); ++i){
+                for(int i = 0; i <abs(fonte-deposito); ++i){
                     clkwise=0;
                     clk=!clk;
-                    wait(tempo);
-                    printf("\rX=%d\n",i);
+                    wait_us(tempo);
+                    //printf("\rX=%d\n",i);
                 }
 
 
