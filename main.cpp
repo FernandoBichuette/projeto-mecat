@@ -1,4 +1,5 @@
 
+
 #include "mbed.h"
 #include "TextLCD.h"
 
@@ -6,9 +7,6 @@
 #include <cstdio>
 #include <new>
 #include <vector>
-
-#include <iostream>
-using namespace std;
 
 
 // Host PC Communication channels
@@ -51,7 +49,7 @@ DigitalIn z_menos(PC_7);
 DigitalIn z_mais(PA_9);
 DigitalOut enable_z(PB_13);
 DigitalOut clkwise_z(PB_14);
-//DigitalOut pipeta(PC_4);
+DigitalOut pipeta(PC_4);
 
 
 int tempo = 950;
@@ -153,7 +151,7 @@ int v9;
 void vermelho(){
     
     if(index>1 && volume>0){
-        ciclo=6;
+        ciclo=9;
     }
     
 }
@@ -283,13 +281,25 @@ void confirma(){
         ciclo=3;
     }
    
-    if(ciclo==3 && define_volume==1 && index<9){
-        ciclo++;
-        
+    if(define_volume==1){
+        ciclo=4;
     }
-
-        
-    if (ciclo==4 && define_posicao==1 && index<9){
+    if(define_volume==2){
+        ciclo=5;
+    }
+    if(define_volume==3){
+        ciclo=6;
+    }
+    if(define_volume==4){
+        ciclo=7;
+    }    
+    if(define_volume==5){
+        ciclo=8;
+    }
+    if(define_volume==6){
+        ciclo=9;
+    }    
+//    if (ciclo==4 && define_posicao==1 && index<9){
 
 //        posicao[n][0] = deposito_x;
 //        posicao[n][1] = deposito_y;
@@ -302,10 +312,8 @@ void confirma(){
 //        salva_volume[0] = 2;
     
 //        n++;
-        printf("\r\n Entrou ");
-        ciclo=5;
-        
-    }
+       
+//    }
     
     
 }
@@ -334,7 +342,7 @@ int main(){
     enable_y=1;
     enable_z=1;
     volume = 0;
-            
+    pipeta =1;        
     while(1){
 
         switch (ciclo) {
@@ -586,10 +594,10 @@ int main(){
                     lcd.locate(3,2);  
                     lcd.printf("no pote %i",index);
                     lcd.locate(3,3);  
-                    lcd.printf("%i  ml",volume);
+                    lcd.printf("%i  ml",v1);
 
                     index++;
-                    
+                    define_volume++;
                     while(ciclo==3){
                         
                         lcd.cls();
@@ -598,7 +606,7 @@ int main(){
                         lcd.locate(3,2);  
                         lcd.printf("no pote %i",index);
                         lcd.locate(3,3);  
-                        lcd.printf("%i  ml",volume);
+                        lcd.printf("%i  ml",v1);
                         wait(0.8);
 
                         while(z_mais==0){
@@ -607,7 +615,7 @@ int main(){
                         }
 
                         while(z_menos==0){
-                            if(volume>=0){
+                            if(v1>=0){
                                 v1--;
                                 wait(0.2);
                             }
@@ -624,15 +632,15 @@ int main(){
                 wait_us(10);
                 lcd.cls();
                 lcd.locate(3,1);
-                lcd.printf("Deposito X %i",deposito_x);
+                lcd.printf("Deposito X %i",x1);
                 lcd.locate(3,2);
-                lcd.printf("Deposito Y %i",deposito_y); 
+                lcd.printf("Deposito Y %i",y1); 
                 lcd.locate(3,3);
-                lcd.printf("Deposito Z %i",deposito_z); 
+                lcd.printf("Deposito Z %i",z1); 
                 
 
-                define_volume=0;
-                define_posicao=1;   
+                define_volume++;
+                   
                 
                 while(ciclo==4){
                     enable_x=1;
@@ -644,15 +652,15 @@ int main(){
                     wait_us(10);
                     lcd.cls();
                     lcd.locate(3,1);
-                    lcd.printf("Deposito X %i",deposito_x);
+                    lcd.printf("Deposito X %i",x1);
                     lcd.locate(3,2);
-                    lcd.printf("Deposito Y %i",deposito_y); 
+                    lcd.printf("Deposito Y %i",y1); 
                     lcd.locate(3,3);
-                    lcd.printf("Deposito Z %i",deposito_z); 
+                    lcd.printf("Deposito Z %i",z1); 
                     wait(0.8);
                     
                     while(x_mais==0){
-                        if(deposito_x<curso_x){
+                        if(x1<curso_x){
                             enable_x=0;
                             clkwise_x=1;        
                             x1 ++;
@@ -665,7 +673,7 @@ int main(){
                     }
                     
                     while(x_menos==0){
-                        if(deposito_x>0){
+                        if(x1>0){
                             enable_x=0;
                             clkwise_x=0;        
                             x1--;
@@ -678,7 +686,7 @@ int main(){
                     }
 
                     while(y_mais==0){
-                        if(deposito_y<curso_y){
+                        if(y1<curso_y){
                             enable_y=0;
                             clkwise_y=0;        
                             y1 ++;
@@ -692,7 +700,7 @@ int main(){
                     }
 
                     while(y_menos==0){
-                        if(deposito_y>0){
+                        if(y1>0){
                             enable_y=0;
                             clkwise_y=1;        
                             y1--;
@@ -705,7 +713,7 @@ int main(){
                         }
                     }            
                     while(z_menos==0){
-                        if(deposito_z<curso_z){
+                        if(z1<curso_z){
                             enable_z=0;
                             clkwise_z=0;        
                             z1 ++;
@@ -719,7 +727,7 @@ int main(){
                     }
 
                     while(z_mais==0){
-                        if(deposito_z>0){
+                        if(z1>0){
                             enable_z=0;
                             clkwise_z=1;        
                             z1--;
@@ -736,62 +744,62 @@ int main(){
 
                 break;
             case 5:
-                
+            
+                lcd.cls();
+                lcd.locate(3,1);  
+                lcd.printf("Defina o volume");
+                lcd.locate(3,2);  
+                lcd.printf("no pote %i",index);
+                lcd.locate(3,3);  
+                lcd.printf("%i  ml",v2);
+
+                index++;
+                define_volume++;
+                while(ciclo==5){
+                    
                     lcd.cls();
                     lcd.locate(3,1);  
                     lcd.printf("Defina o volume");
                     lcd.locate(3,2);  
                     lcd.printf("no pote %i",index);
                     lcd.locate(3,3);  
-                    lcd.printf("%i  ml",volume);
+                    lcd.printf("%i  ml",v2);
+                    wait(0.8);
 
-                    index++;
-                    
-                    while(ciclo==3){
-                        
-                        lcd.cls();
-                        lcd.locate(3,1);  
-                        lcd.printf("Defina o volume");
-                        lcd.locate(3,2);  
-                        lcd.printf("no pote %i",index);
-                        lcd.locate(3,3);  
-                        lcd.printf("%i  ml",volume);
-                        wait(0.8);
+                    while(z_mais==0){
+                        v2++; 
+                        wait(0.2);
+                    }
 
-                        while(z_mais==0){
-                            v1++; 
+                    while(z_menos==0){
+                        if(v2>=0){
+                            v2--;
                             wait(0.2);
                         }
 
-                        while(z_menos==0){
-                            if(volume>=0){
-                                v1--;
-                                wait(0.2);
-                            }
-
-                        }
                     }
                 }
+            
                 break;
 ////                        
                         
-            case 4:
-                
+            case 6:
+                x2=x1;
+                y2=y1;
+                z2=z1;
                 lcd.cls();
                 wait_us(10);
                 lcd.cls();
                 lcd.locate(3,1);
-                lcd.printf("Deposito X %i",deposito_x);
+                lcd.printf("Deposito X %i",x2);
                 lcd.locate(3,2);
-                lcd.printf("Deposito Y %i",deposito_y); 
+                lcd.printf("Deposito Y %i",y2); 
                 lcd.locate(3,3);
-                lcd.printf("Deposito Z %i",deposito_z); 
-                
+                lcd.printf("Deposito Z %i",z2); 
+                define_volume++;
 
-                define_volume=0;
-                define_posicao=1;   
-                
-                while(ciclo==4){
+                            
+                while(ciclo==6){
                     enable_x=1;
                     enable_y=1;
                     enable_z=1;
@@ -801,18 +809,18 @@ int main(){
                     wait_us(10);
                     lcd.cls();
                     lcd.locate(3,1);
-                    lcd.printf("Deposito X %i",deposito_x);
+                    lcd.printf("Deposito X %i",x2);
                     lcd.locate(3,2);
-                    lcd.printf("Deposito Y %i",deposito_y); 
+                    lcd.printf("Deposito Y %i",y2); 
                     lcd.locate(3,3);
-                    lcd.printf("Deposito Z %i",deposito_z); 
+                    lcd.printf("Deposito Z %i",z2); 
                     wait(0.8);
                     
                     while(x_mais==0){
-                        if(deposito_x<curso_x){
+                        if(x2<curso_x){
                             enable_x=0;
                             clkwise_x=1;        
-                            x1 ++;
+                            x2++;
                             clk=!clk;
                             wait_us(tempo);     
                         }
@@ -822,10 +830,10 @@ int main(){
                     }
                     
                     while(x_menos==0){
-                        if(deposito_x>0){
+                        if(x2>0){
                             enable_x=0;
                             clkwise_x=0;        
-                            x1--;
+                            x2--;
                             clk=!clk;
                             wait_us(tempo);         
                         }
@@ -835,10 +843,10 @@ int main(){
                     }
 
                     while(y_mais==0){
-                        if(deposito_y<curso_y){
+                        if(y2<curso_y){
                             enable_y=0;
                             clkwise_y=0;        
-                            y1 ++;
+                            y2 ++;
                             clk=!clk;
                             wait_us(tempo);     
                         }
@@ -849,10 +857,10 @@ int main(){
                     }
 
                     while(y_menos==0){
-                        if(deposito_y>0){
+                        if(y2>0){
                             enable_y=0;
                             clkwise_y=1;        
-                            y1--;
+                            y2--;
                             clk=!clk;
                             wait_us(tempo);         
                         }
@@ -862,10 +870,10 @@ int main(){
                         }
                     }            
                     while(z_menos==0){
-                        if(deposito_z<curso_z){
+                        if(z2<curso_z){
                             enable_z=0;
                             clkwise_z=0;        
-                            z1 ++;
+                            z2 ++;
                             clk=!clk;
                             wait_us(tempo);     
                         }
@@ -876,10 +884,10 @@ int main(){
                     }
 
                     while(z_mais==0){
-                        if(deposito_z>0){
+                        if(z2>0){
                             enable_z=0;
                             clkwise_z=1;        
-                            z1--;
+                            z2--;
                             clk=!clk;
                             wait_us(tempo);         
                         }
@@ -892,19 +900,166 @@ int main(){
                 }
 
                 break;
+//
+            case 7:
+                define_volume++;
+                lcd.cls();
+                lcd.locate(3,1);  
+                lcd.printf("Defina o volume");
+                lcd.locate(3,2);  
+                lcd.printf("no pote %i",index);
+                lcd.locate(3,3);  
+                lcd.printf("%i  ml",v3);
 
-            case 5:
-
-                posicao[n][0] = deposito_x;
-                posicao[n][1] = deposito_y;
-                posicao[n][2] = deposito_z;
-                posicao[n][3] = volume;
-                n++;
-                printf("\r\nEntrou 1");
+                index++;
                 
+                while(ciclo==7){
+                    
+                    lcd.cls();
+                    lcd.locate(3,1);  
+                    lcd.printf("Defina o volume");
+                    lcd.locate(3,2);  
+                    lcd.printf("no pote %i",index);
+                    lcd.locate(3,3);  
+                    lcd.printf("%i  ml",v3);
+                    wait(0.8);
+
+                    while(z_mais==0){
+                        v3++; 
+                        wait(0.2);
+                    }
+
+                    while(z_menos==0){
+                        if(v3>=0){
+                            v3--;
+                            wait(0.2);
+                        }
+
+                    }
+                }
+            
+                break;
+////                        
+                        
+            case 8:
+                
+                x3=x2;
+                y3=y2;
+                z3=z2;
+                
+                lcd.cls();
+                wait_us(10);
+                lcd.cls();
+                lcd.locate(3,1);
+                lcd.printf("Deposito X %i",x3);
+                lcd.locate(3,2);
+                lcd.printf("Deposito Y %i",y3); 
+                lcd.locate(3,3);
+                lcd.printf("Deposito Z %i",z3); 
+                define_volume++;                
+                while(ciclo==8){
+                    enable_x=1;
+                    enable_y=1;
+                    enable_z=1;
+                    
+
+                    lcd.cls();
+                    wait_us(10);
+                    lcd.cls();
+                    lcd.locate(3,1);
+                    lcd.printf("Deposito X %i",x3);
+                    lcd.locate(3,2);
+                    lcd.printf("Deposito Y %i",y3); 
+                    lcd.locate(3,3);
+                    lcd.printf("Deposito Z %i",z3); 
+                    wait(0.8);
+                    
+                    while(x_mais==0){
+                        if(x3<curso_x){
+                            enable_x=0;
+                            clkwise_x=1;        
+                            x3 ++;
+                            clk=!clk;
+                            wait_us(tempo);     
+                        }
+                        else{
+                            enable_x=1;
+                        }
+                    }
+                    
+                    while(x_menos==0){
+                        if(x3>0){
+                            enable_x=0;
+                            clkwise_x=0;        
+                            x3--;
+                            clk=!clk;
+                            wait_us(tempo);         
+                        }
+                        else{      
+                            enable_x=1;
+                        }
+                    }
+
+                    while(y_mais==0){
+                        if(y3<curso_y){
+                            enable_y=0;
+                            clkwise_y=0;        
+                            y3 ++;
+                            clk=!clk;
+                            wait_us(tempo);     
+                        }
+                        
+                        else{
+                            enable_y=1;
+                        }
+                    }
+
+                    while(y_menos==0){
+                        if(y3>0){
+                            enable_y=0;
+                            clkwise_y=1;        
+                            y3--;
+                            clk=!clk;
+                            wait_us(tempo);         
+                        }
+
+                        else{      
+                            enable_y=1;
+                        }
+                    }            
+                    while(z_menos==0){
+                        if(z3<curso_z){
+                            enable_z=0;
+                            clkwise_z=0;        
+                            z3 ++;
+                            clk=!clk;
+                            wait_us(tempo);     
+                        }
+                        
+                        else{
+                            enable_z=1;
+                        }
+                    }
+
+                    while(z_mais==0){
+                        if(z3>0){
+                            enable_z=0;
+                            clkwise_z=1;        
+                            z3--;
+                            clk=!clk;
+                            wait_us(tempo);         
+                        }
+
+                        else{      
+                            enable_z=1;
+                        }
+                    }
+
+                }
+
                 break;
             
-            case 6:   
+            case 9:   
 
                 enable_x=1;
                 enable_y=1;
@@ -918,21 +1073,128 @@ int main(){
                 lcd.locate(3,3);
                 lcd.printf("Automatico");        
                 wait(0.5);    
-
-                for (int i = 0; i < 2; i++){
-                    cout << "\rX: "<< posicao[i][0] << endl;
-                    cout << "\rY: "<< posicao[i][1] << endl;
-                    cout << "\rZ: "<< posicao[i][2]<< endl;
-                    cout << "\rV: "<< posicao[i][3] << endl;
-                    wait(0.5);
-                }
-
-
-                for(int i=0;i<=index;i++){
-                    for(int j=0;j<=salva_volume[i];j++){
+                
+                if(v3>0){
+                    for(int j=0;j<=v3;j++){
                         
-                        for(int n=0;n<=posicao_z[i];n++){
-//                            printf("\r\nEntrou Z1 %i",contadorz++);    
+                        for(int n=0;n<=z3;n++){  
+                            enable_x=1;
+                            enable_y=1;
+                            enable_z=0;
+                            clkwise_z=1;
+                            clk=!clk;
+                            wait_us(tempo); 
+
+                        }
+                        wait(0.2);                        
+    
+                        for(int n=0;n<=abs(fonte_x-x3);n++){
+                            enable_x=0;
+                            enable_y=1;
+                            enable_z=1;
+                            if ((fonte_x-x3)<0){ 
+                                clkwise_x=0;
+                            }
+                            else{
+                                clkwise_x=1;  
+                            }
+                            clk=!clk;
+                            wait_us(tempo);  
+                        }     
+                        wait(0.2);
+                        for(int n=0;n<=abs(fonte_y-y3);n++){
+
+                            enable_x=1;
+                            enable_y=0;
+                            enable_z=1;
+
+                            if ((fonte_y-y3)<0){
+                                clkwise_y=1;
+                            }
+                            else{ 
+                                clkwise_y=0;  
+                            }
+                            clk=!clk;
+                            wait_us(tempo);  
+                        }     
+                        wait(0.2);
+ 
+                        for(int n=0;n<=fonte_z;n++){
+
+                            enable_x=1;
+                            enable_y=1;
+                            enable_z=0;
+
+                            clkwise_z=0;
+                            clk=!clk;
+                            wait_us(tempo); 
+                            
+                        }
+                        wait(0.2);
+
+                        pipeta=0;
+                        wait(2);
+                        
+                        for(int n=0;n<=fonte_z;n++){
+                            enable_x=1;
+                            enable_y=1;
+                            enable_z=0;
+
+                            clkwise_z=1;
+                            clk=!clk;
+                            wait_us(tempo); 
+
+                        }
+                        wait(0.2);
+
+                        
+                        for(int n=0;n<=abs(fonte_x-x3);n++){
+                            enable_x=0;
+                            enable_y=1;
+                            enable_z=1;
+                            if ((fonte_x-x3)<0){ 
+                                clkwise_x=1;
+                            }
+                            else{
+                                clkwise_x=0;  
+                            }
+                            clk=!clk;
+                            wait_us(tempo);  
+                        }     
+                        wait(0.2);
+                        for(int n=0;n<=abs(fonte_y-y3);n++){
+                            enable_x=1;
+                            enable_y=0;
+                            enable_z=1;
+
+                            if ((fonte_y-y3)<0){
+                                clkwise_y=0;
+                            }
+                            else{ 
+                                clkwise_y=1;  
+                            }
+                            clk=!clk;
+                            wait_us(tempo);  
+                        }
+                        wait(0.2);                    
+                        
+                        for(int n=0;n<=z3;n++){
+                            enable_x=1;
+                            enable_y=1;
+                            enable_z=0;
+                            clkwise_z=0;
+                            clk=!clk;
+                            wait_us(tempo); 
+                        }
+                        wait(0.2);
+                        pipeta=0;
+                        wait(2);
+
+                    }
+                }
+                if(v2>0){
+
+                        for(int n=0;n<=z3;n++){  
                             enable_x=1;
                             enable_y=1;
                             enable_z=0;
@@ -943,39 +1205,42 @@ int main(){
                         }
                         wait(0.2);                        
     
-                        for(int n=0;n<=abs(fonte_x-posicao_x[i]);n++){
-//                            printf("\r\nEntrou X1 %i",contadorx++); 
+                        for(int n=0;n<=abs(x3-x2);n++){
                             enable_x=0;
                             enable_y=1;
                             enable_z=1;
-                            if ((fonte_x-posicao_x[i])<0){ 
-                                clkwise_x=1;
+                            if ((x3-x2)<0){ 
+                                clkwise_x=0;
                             }
                             else{
-                                clkwise_x=0;  
+                                clkwise_x=1;  
                             }
                             clk=!clk;
                             wait_us(tempo);  
                         }     
                         wait(0.2);
-                        for(int n=0;n<=abs(fonte_y-posicao_y[i]);n++){
-//                            printf("\r\nEntrou Y1 %i",contadory++); 
+                        for(int n=0;n<=abs(y3-y2);n++){
+
                             enable_x=1;
                             enable_y=0;
                             enable_z=1;
 
-                            if ((fonte_y-posicao_y[i])<0){
-                                clkwise_y=0;
+                            if ((y3-y2)<0){
+                                clkwise_y=1;
                             }
                             else{ 
-                                clkwise_y=1;  
+                                clkwise_y=0;  
                             }
                             clk=!clk;
                             wait_us(tempo);  
                         }     
                         wait(0.2);
-                        for(int n=0;n<=fonte_z;n++){
-//                            printf("\r\nEntrou Z2"); 
+                    
+                    for(int j=0;j<=v2;j++){                     
+    
+                        
+                        for(int n=0;n<=z2;n++){
+
                             enable_x=1;
                             enable_y=1;
                             enable_z=0;
@@ -987,7 +1252,113 @@ int main(){
                         }
                         wait(0.2);
                         
+                        for(int n=0;n<=z2;n++){
+                            enable_x=1;
+                            enable_y=1;
+                            enable_z=0;
+
+                            clkwise_z=1;
+                            clk=!clk;
+                            wait_us(tempo); 
+                            
+                        }
+                        wait(0.2);
+                        pipeta=0;
+                        wait(2);
+
+                        for(int n=0;n<=abs(fonte_x-x2);n++){
+                            enable_x=0;
+                            enable_y=1;
+                            enable_z=1;
+                            if ((fonte_x-x2)<0){ 
+                                clkwise_x=1;
+                            }
+                            else{
+                                clkwise_x=0;  
+                            }
+                            clk=!clk;
+                            wait_us(tempo);  
+                        }     
+                        wait(0.2);
+                        for(int n=0;n<=abs(fonte_y-y2);n++){
+
+                            enable_x=1;
+                            enable_y=0;
+                            enable_z=1;
+
+                            if ((fonte_y-y2)<0){
+                                clkwise_y=0;
+                            }
+                            else{ 
+                                clkwise_y=1;  
+                            }
+                            clk=!clk;
+                            wait_us(tempo);  
+                        }     
+                        wait(0.2);
+
+                        for(int n=0;n<=z2;n++){
+                            enable_x=1;
+                            enable_y=1;
+                            enable_z=0;
+                            clkwise_z=0;
+                            clk=!clk;
+                            wait_us(tempo); 
+                            //pipeta=!pipeta;
+                        }
+                        wait(0.2);
+                        pipeta=1;
+                        wait(2);  
+                        for(int n=0;n<=z2;n++){
+                            enable_x=1;
+                            enable_y=1;
+                            enable_z=0;
+                            clkwise_z=1;
+                            clk=!clk;
+                            wait_us(tempo); 
+                            //pipeta=!pipeta;
+                        }
+                        wait(0.2);
+                      
+
+                        for(int n=0;n<=abs(fonte_x-x2);n++){
+                            enable_x=0;
+                            enable_y=1;
+                            enable_z=1;
+                            if ((fonte_x-x2)<0){ 
+                                clkwise_x=0;
+                            }
+                            else{
+                                clkwise_x=1;  
+                            }
+                            clk=!clk;
+                            wait_us(tempo);  
+                        }     
+                        wait(0.2);
+                        for(int n=0;n<=abs(fonte_y-y2);n++){
+                            enable_x=1;
+                            enable_y=0;
+                            enable_z=1;
+
+                            if ((fonte_y-y2)<0){
+                                clkwise_y=1;
+                            }
+                            else{ 
+                                clkwise_y=0;  
+                            }
+                            clk=!clk;
+                            wait_us(tempo);  
+                        }
+                        wait(0.2);                    
+                        
+                    }
+
+                }                    
+                if(v1>0){
+
+                    for(int j=0;j<=v1;j++){
                         for(int n=0;n<=fonte_z;n++){
+
                             enable_x=1;
                             enable_y=1;
                             enable_z=0;
@@ -999,11 +1370,79 @@ int main(){
                         }
                         wait(0.2);
                         
-                        for(int n=0;n<=abs(fonte_x-posicao_x[i]);n++){
+                        for(int n=0;n<=fonte_z;n++){
+                            enable_x=1;
+                            enable_y=1;
+                            enable_z=0;
+
+                            clkwise_z=0;
+                            clk=!clk;
+                            wait_us(tempo); 
+                            //pipeta=!pipeta;
+                        }
+                        wait(0.2);
+                        pipeta=0;
+                        wait(2);
+
+                        for(int n=0;n<=abs(fonte_x-x1);n++){
                             enable_x=0;
                             enable_y=1;
                             enable_z=1;
-                            if ((fonte_x-posicao_x[i])<0){ 
+                            if ((fonte_x-x1)<0){ 
+                                clkwise_x=1;
+                            }
+                            else{
+                                clkwise_x=0;  
+                            }
+                            clk=!clk;
+                            wait_us(tempo);  
+                        }     
+                        wait(0.2);
+                        for(int n=0;n<=abs(fonte_y-y1);n++){
+
+                            enable_x=1;
+                            enable_y=0;
+                            enable_z=1;
+
+                            if ((fonte_y-y1)<0){
+                                clkwise_y=0;
+                            }
+                            else{ 
+                                clkwise_y=1;  
+                            }
+                            clk=!clk;
+                            wait_us(tempo);  
+                        }     
+                        wait(0.2);
+
+                        for(int n=0;n<=z1;n++){
+                            enable_x=1;
+                            enable_y=1;
+                            enable_z=0;
+                            clkwise_z=0;
+                            clk=!clk;
+                            wait_us(tempo); 
+                            //pipeta=!pipeta;
+                        }
+                        wait(0.2);
+                        pipeta=1;
+                        wait(2);
+                        for(int n=0;n<=z1;n++){
+                            enable_x=1;
+                            enable_y=1;
+                            enable_z=0;
+                            clkwise_z=1;
+                            clk=!clk;
+                            wait_us(tempo); 
+                            //pipeta=!pipeta;
+                        }
+                        wait(0.2);                        
+
+                        for(int n=0;n<=abs(fonte_x-x1);n++){
+                            enable_x=0;
+                            enable_y=1;
+                            enable_z=1;
+                            if ((fonte_x-x1)<0){ 
                                 clkwise_x=0;
                             }
                             else{
@@ -1013,12 +1452,12 @@ int main(){
                             wait_us(tempo);  
                         }     
                         wait(0.2);
-                        for(int n=0;n<=abs(fonte_y-posicao_y[i]);n++){
+                        for(int n=0;n<=abs(fonte_y-y1);n++){
                             enable_x=1;
                             enable_y=0;
                             enable_z=1;
 
-                            if ((fonte_y-posicao_y[i])<0){
+                            if ((fonte_y-y1)<0){
                                 clkwise_y=1;
                             }
                             else{ 
@@ -1027,20 +1466,8 @@ int main(){
                             clk=!clk;
                             wait_us(tempo);  
                         }
-                        wait(0.2);                    
-                        
-                        for(int n=0;n<=posicao_z[i];n++){
-                            enable_x=1;
-                            enable_y=1;
-                            enable_z=0;
-                            clkwise_z=0;
-                            clk=!clk;
-                            wait_us(tempo); 
-                            //pipeta=!pipeta;
-                        }
-                        wait(0.2);                     
+                        wait(0.2);
                     }
-
                 }
                 lcd.cls();
                 wait_us(10);
@@ -1051,11 +1478,11 @@ int main(){
                 lcd.printf("Automatico");        
                 wait(0.5); 
                 break;       
-            }
+            
             
             
         }    
            
                     
     }
-      
+}
