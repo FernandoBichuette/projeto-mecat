@@ -1,4 +1,4 @@
-Projeto Mecatrônico
+#Projeto Mecatrônico
 
 O projeto mecatrônico da INSPER envolve a criação de uma máquina pipetadora automática destinada a laboratórios, com o intuito de otimizar e tornar mais preciso o processo de pipetagem. A equipe responsável pelo projeto abordou as áreas de Mecânica, Eletrônica e Software para desenvolver um protótipo funcional que atendesse aos requisitos estabelecidos.
 
